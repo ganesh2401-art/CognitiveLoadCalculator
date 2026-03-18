@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cognitive Load Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            color: #222;
+            font-weight: 500;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: white;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .sidebar h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 18px;
+        }
+
+        .nav-btn {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            border: none;
+            border-radius: 5px;
+            background: #f0f0f0;
+            color: #222;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .nav-btn:hover {
+            background: #667eea;
+            color: white;
+        }
+
+        .nav-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .sidebar-info {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+            font-size: 14px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .info-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 3px solid #667eea;
+            font-size: 14px;
+            font-weight: 600;
+            color: #222;
+        }
+
+        .main-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 40px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 32px;
+        }
+
+        h2 {
+            color: #764ba2;
+            margin-top: 25px;
+            margin-bottom: 15px;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #222;
+            transition: 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #222;
+            border: 2px solid #667eea;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+        }
+
+        .btn-small {
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Form Elements */
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: 600;
+            color: #222;
+            resize: vertical;
+            transition: border-color 0.3s;
+            line-height: 1.6;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        textarea:disabled {
+            background: #ffffff;
+            color: #222;
+            font-weight: 600;
+            border-color: #667eea;
+        }
+
+        /* Target text visibility */
+        #targetWords {
+            background: #f0f4ff !important;
+            color: #000 !important;
+            font-size: 18px !important;
+            font-weight: 700 !important;
+            border: 2px solid #667eea !important;
+            letter-spacing: 0.5px;
+            word-spacing: 2px;
+        }
+
+        #typingInput {
+            background: #ffffff !important;
+            color: #111 !important;
+            font-size: 18px !important;
+            font-weight: 600 !important;
+            border: 3px solid #667eea !important;
+            padding: 15px !important;
+        }
+
+        #typingInput::placeholder {
+            color: #999;
+            font-style: italic;
+        }
+
+        .timer {
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+            color: #667eea;
+            margin: 20px 0;
+            font-family: 'Courier New', monospace;
+        }
+
+        .timer.warning {
+            color: #ff9800;
+        }
+
+        .timer.danger {
+            color: #f44336;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .metric {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 2px solid #ddd;
+            color: #222;
+            font-weight: 600;
+        }
+
+        .metric-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .metric-label {
+            font-size: 14px;
+            color: #555;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 5px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin: 15px 0;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .alert-info {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #1976d2;
+        }
+
+        .alert-success {
+            background: #e8f5e9;
+            color: #388e3c;
+            border-left: 4px solid #388e3c;
+        }
+
+        .alert-error {
+            background: #ffebee;
+            color: #d32f2f;
+            border-left: 4px solid #d32f2f;
+        }
+
+        .alert-warning {
+            background: #fff3e0;
+            color: #f57c00;
+            border-left: 4px solid #f57c00;
+        }
+
+        /* Balloons */
+        .balloon-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .balloon {
+            padding: 15px;
+            text-align: center;
+            font-size: 30px;
+            cursor: pointer;
+            background: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+        .balloon:hover {
+            transform: scale(1.1);
+            background: #e8e8e8;
+        }
+
+        /* Math Problems */
+        .math-display {
+            font-size: 48px;
+            text-align: center;
+            margin: 30px 0;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .option-btn {
+            padding: 20px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        .option-btn:hover {
+            border-color: #667eea;
+            background: #f5f5f5;
+        }
+
+        .option-btn.correct {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #4caf50;
+        }
+
+        .option-btn.incorrect {
+            background: #ffebee;
+            border-color: #f44336;
+            color: #f44336;
+        }
+
+        /* Results Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        tr:hover {
+            background: #f5f5f5;
+        }
+
+        .cog-load-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .cog-low {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .cog-medium {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .cog-high {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        /* Difficulty level badge styling */
+        .difficulty-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .difficulty-easy {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .difficulty-medium {
+            background: #fff3e0;
+            color: #e65100;
+        }
+
+        .difficulty-hard {
+            background: #ffebee;
+            color: #c62828;
+        }
+
+        /* Input area styling */
+        .input-area {
+            margin: 20px 0;
+        }
+
+        .label {
+            font-weight: 700;
+            color: #222;
+            margin-bottom: 5px;
+            display: block;
+            font-size: 15px;
+        }
+
+        /* Scroll text */
+        .scroll-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #222;
+            overflow-x: hidden;
+            padding: 12px;
+            background: #f9f9f9;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            white-space: nowrap;
+        }
+
+        .scroll-content {
+            display: inline-block;
+            animation: scroll-animation 10s linear infinite;
+        }
+
+        @keyframes scroll-animation {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* Blinking text */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .blink-text {
+            /* Animation will be applied dynamically via JavaScript */
+            display: inline-block;
+            font-weight: 600;
+            color: #222;
+        }
+
+        /* Color avoidance */
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 5px;
+            font-size: 20px;
+            font-weight: 600;
+            line-height: 2;
+            color: #222;
+            border: 2px solid #ddd;
+        }
+
+        .word {
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-weight: 600;
+            color: #222;
+            background: #ffffff;
+            border: 1px solid #ddd;
+        }
+
+        .word.colored {
+            background: #f44336;
+            color: white;
+            font-weight: 700;
+            border: 2px solid #d32f2f;
+        }
+
+        /* Box clicking */
+        .box-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .box {
+            padding: 30px;
+            text-align: center;
+            font-size: 22px;
+            font-weight: 700;
+            color: #222;
+            cursor: pointer;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            background: white;
+            transition: 0.3s;
+        }
+
+        .box:hover {
+            transform: scale(1.05);
+        }
+
+        .box.red-box {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+
+        .box.blue-box {
+            background: #e3f2fd;
+            border-color: #1976d2;
+        }
+
+        /* Theme changing display */
+        .theme-display {
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 16px;
+            color: #222;
+            margin: 10px 0;
+        }
+
+        .theme-light { background: #ffffff; color: #222; border: 2px solid #333; }
+        .theme-dark { background: #333333; color: #ffffff; font-weight: 700; }
+        .theme-green { background: #e8f5e9; color: #1b5e20; border: 2px solid #4caf50; font-weight: 700; }
+        .theme-blue { background: #e3f2fd; color: #0d47a1; border: 2px solid #2196f3; font-weight: 700; }
+        .theme-red { background: #ffebee; color: #c62828; border: 2px solid #f44336; }
+        .theme-yellow { background: #fff9c4; color: #f57f17; border: 2px solid #fbc02d; }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <h2>🧠 Cognitive Load</h2>
+        
+        <button class="nav-btn active" onclick="navigateTo('home')">🏠 Home</button>
+        <button class="nav-btn" onclick="navigateTo('calibration')">📋 Calibration</button>
+        <button class="nav-btn" onclick="navigateTo('tasks')">🎮 Tasks</button>
+        <button class="nav-btn" onclick="navigateTo('results')">📊 Results</button>
+        <button class="nav-btn" onclick="navigateTo('data')">📈 Data</button>
+        <button class="nav-btn" onclick="navigateTo('help')">❓ Help</button>
+        
+        <div class="sidebar-info">
+            <div class="info-item">
+                <strong>User</strong><br>
+                <span id="sidebarUserId">U1</span>
+            </div>
+            <div class="info-item" id="wpmInfo" style="display:none;">
+                <strong>WPM</strong><br>
+                <span id="sidebarWpm">-</span>
+            </div>
+            <div class="info-item" id="progressInfo" style="display:none;">
+                <strong>Progress</strong><br>
+                <div class="progress-bar" style="margin-top: 10px;">
+                    <div class="progress-fill" id="sidebarProgress"></div>
+                </div>
+                <span id="taskCount">0/11</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- HOME PAGE -->
+        <div id="homePage" class="container">
+            <h1>🧠 Cognitive Load Calculator</h1>
+            <p style="color: #666; margin-bottom: 20px;">Analyze cognitive load through behavioral metrics</p>
+            
+            <h2>How It Works</h2>
+            <p><strong>Phase 1: Calibration</strong> - Establish your baseline WPM (3 levels, 60s each)</p>
+            <p><strong>Phase 2: 11 Tasks</strong> - Various tasks measuring cognitive stress across typing, clicking, and math</p>
+            <p><strong>Phase 3: Analysis</strong> - Get your cognitive load classification</p>
+            
+            <h2>14 Features Collected</h2>
+            <p><strong>Typing Metrics:</strong> speed, errors, corrections, pauses, rhythm, hesitation, awareness, randomness</p>
+            <p><strong>Mouse Metrics:</strong> speed, control, accuracy, clicking, decision-making, direction</p>
+            
+            <div class="button-group">
+                <button class="btn-primary" onclick="navigateTo('calibration')">▶️ Start Calibration</button>
+                <button class="btn-secondary" onclick="navigateTo('help')">❓ Learn More</button>
+            </div>
+        </div>
+
+        <!-- CALIBRATION PAGE -->
+        <div id="calibrationPage" class="container hidden">
+            <h1>📋 WPM Calibration</h1>
+            <div id="calibrationComplete" class="hidden">
+                <div class="alert alert-success">✅ Calibration Complete!</div>
+                <div class="metric">
+                    <div class="metric-value" id="finalWpm">45</div>
+                    <div class="metric-label">Average WPM</div>
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="navigateTo('tasks')">Start Tasks ▶️</button>
+                    <button class="btn-secondary" onclick="resetCalibration()">Recalibrate</button>
+                </div>
+            </div>
+
+            <div id="calibrationActive">
+                <div id="levelHeader"></div>
+                
+                <div class="grid-2">
+                    <div>
+                        <div class="label">Target words (read and type):</div>
+                        <textarea id="targetWords" rows="8" disabled></textarea>
+                    </div>
+                    <div>
+                        <div class="label">Your typing:</div>
+                        <textarea id="typingInput" rows="8" placeholder="Start typing here..."></textarea>
+                        
+                        <div class="timer" id="calTimer">60</div>
+                        <div class="grid-3">
+                            <div class="metric">
+                                <div class="metric-value" id="calWpm">0</div>
+                                <div class="metric-label">WPM</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value" id="calChars">0</div>
+                                <div class="metric-label">Chars</div>
+                            </div>
+                            <div class="metric">
+                                <div class="metric-value" id="calLevel">1/3</div>
+                                <div class="metric-label">Level</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="button-group" style="margin-top: 30px;">
+                    <button class="btn-primary" onclick="submitCalibration()">✅ Submit</button>
+                    <button class="btn-secondary" onclick="skipCalibration()">⏭️ Skip</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- TASKS PAGE -->
+        <div id="tasksPage" class="container hidden">
+            <div id="taskHeader"></div>
+            
+            <!-- Task 1 -->
+            <div id="task1" class="hidden">
+                <h2>Task 1: Typing + Math</h2>
+                <p>Type all words + solve random math problems. Timer does NOT pause for math.</p>
+                <div class="grid-2">
+                    <div>
+                        <div class="label">Type these words:</div>
+                        <textarea id="task1Words" rows="8" disabled></textarea>
+                    </div>
+                    <div>
+                        <div class="label">Your typing:</div>
+                        <textarea id="task1Input" rows="8" placeholder="Type here..."></textarea>
+                    </div>
+                </div>
+                <div style="text-align: center; margin: 20px 0;">
+                    <div class="label">⚡ Math Problem:</div>
+                    <div class="math-display" id="task1MathDisplay" style="font-size: 36px; margin: 20px 0;">-</div>
+                    <div class="options-grid" id="task1MathOptions"></div>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <div class="timer" id="task1Timer">60</div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="submitTask(0)">✅ Submit</button>
+                        <button class="btn-secondary" onclick="skipTask()">⏭️ Skip</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task 2 -->
+            <div id="task2" class="hidden">
+                <h2>Task 2: Distraction-Free Typing</h2>
+                <p>Type all words cleanly. Focus and minimize errors.</p>
+                <div class="grid-2">
+                    <div>
+                        <div class="label">Type these words:</div>
+                        <textarea id="task2Words" rows="10" disabled></textarea>
+                    </div>
+                    <div>
+                        <div class="label">Your typing:</div>
+                        <textarea id="task2Input" rows="10" placeholder="Focus and type..."></textarea>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <div class="timer" id="task2Timer">60</div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="submitTask(1)">✅ Submit</button>
+                        <button class="btn-secondary" onclick="skipTask()">⏭️ Skip</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task 3 -->
+            <div id="task3" class="hidden">
+                <h2>Task 3: Theme Changes</h2>
+                <p>Type while theme changes every 10 seconds. Watch the colors shift!</p>
+                <div id="themeDisplay" class="theme-display theme-light" style="margin: 20px 0; padding: 30px; font-size: 18px; font-weight: 700;">🎨 Light Theme</div>
+                <div class="grid-2">
+                    <div>
+                        <div class="label">Type these words:</div>
+                        <textarea id="task3Words" rows="10" disabled></textarea>
+                    </div>
+                    <div>
+                        <div class="label">Your typing:</div>
+                        <textarea id="task3Input" rows="10" placeholder="Type here..."></textarea>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <div class="timer" id="task3Timer">60</div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="submitTask(2)">✅ Submit</button>
+                        <button class="btn-secondary" onclick="skipTask()">⏭️ Skip</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task 4 -->
+            <div id="task4" class="hidden">
+                <h2>Task 4: Balloon Burst</h2>
+                <p>Click 50 balloons as fast as possible.</p>
+                <div class="grid-3">
+                    <div class="metric">
+                        <div class="metric-value">50</div>
+                        <div class="metric-label">Target</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="balloonCount">0</div>
+                        <div class="metric-label">Popped</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="task4Timer">25</div>
+                        <div class="metric-label">Time</div>
+                    </div>
+                </div>
+                <div class="balloon-grid" id="balloonGrid"></div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="submitTask(3)">✅ Done</button>
+                    <button class="btn-secondary" onclick="skipTask()">⏭️ Skip</button>
+                </div>
+            </div>
+
+            <!-- Task 5 -->
+            <div id="task5" class="hidden">
+                <h2>Task 5: Increased Load</h2>
+                <p>Heavy load: Type more words in the same time.</p>
+                <div class="grid-2">
+                    <div id="task5BlinkingColumn">
+                        <div class="label">Type these words:</div>
+                        <textarea id="task5Words" rows="10" disabled></textarea>
+                    </div>
+                    <div>
+                        <div class="label">Your typing:</div>
+                        <textarea id="task5Input" rows="10" placeholder="Type here..."></textarea>
+                    </div>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <div class="timer" id="task5Timer">60</div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="submitTask(4)">✅ Submit</button>
+                        <button class="btn-secondary" onclick="skipTask()">⏭️ Skip</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task 6 -->
+            <div id="task6" class="hidden">
+                <h2>Task 6: Blinking Words</h2>
+                <p>Words blink - start slow and get faster. Read and try to remember them.</p>
+                <div id="blinkingWords" style="padding: 20px; background: #f9f9f9; border-radius: 5px; margin: 15px 0; font-size: 18px; font-weight: 600; line-height: 1.8;"></div>
+                <div class="input-area">
+                    <div class="label">Type from memory:</div>
+                    <textarea id="task6Input" rows="8" placeholder="Type from memory..."></textarea>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <div class="timer" id="task6Timer">60</div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="submitTask(5)">✅ Submit</button>
+                        <button class="btn-secondary" onclick="skipTask()">⏭️ Skip</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task 7 -->
+            <div id="task7" class="hidden">
+                <h2>Task 7: Scrolling Words</h2>
+                <p>Words scroll horizontally - follow and type.</p>
+                <div id="scrollingText" class="scroll-text">
+                    <div class="scroll-content"></div>
+                </div>
+                <div class="input-area">
+                    <div class="label">Type all words:</div>
+                    <textarea id="task7Input" rows="8" placeholder="Type here..."></textarea>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <div class="timer" id="task7Timer">60</div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="submitTask(6)">✅ Submit</button>
+                        <button class="btn-secondary" onclick="skipTask()">⏭️ Skip</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task 8 -->
+            <div id="task8" class="hidden">
+                <h2>Task 8: Vanishing Words</h2>
+                <p>Words vanish after 1.5s - try to remember them.</p>
+                <div id="vanishingWords" style="padding: 20px; background: #f9f9f9; border-radius: 5px; margin: 15px 0; font-size: 16px;"></div>
+                <div class="input-area">
+                    <div class="label">Type from memory:</div>
+                    <textarea id="task8Input" rows="8" placeholder="Type from memory..."></textarea>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <div class="timer" id="task8Timer">60</div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="submitTask(7)">✅ Submit</button>
+                        <button class="btn-secondary" onclick="skipTask()">⏭️ Skip</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task 9 -->
+            <div id="task9" class="hidden">
+                <h2>Task 9: Color Avoidance</h2>
+                <p>🔴 Type all words but skip colored (red) ones. Lose lives if typed red.</p>
+                <div id="coloredWords" class="word-list"></div>
+                <div class="alert alert-warning">❤️❤️❤️ 3 Lives - Don't type red words!</div>
+                <div class="input-area">
+                    <div class="label">Type (skip red words):</div>
+                    <textarea id="task9Input" rows="8" placeholder="Type here..."></textarea>
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <div class="timer" id="task9Timer">60</div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="submitTask(8)">✅ Submit</button>
+                        <button class="btn-secondary" onclick="skipTask()">⏭️ Skip</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Task 10 -->
+            <div id="task10" class="hidden">
+                <h2>Task 10: Click Red Boxes</h2>
+                <p>🔲 Click ONLY red boxes. Ignore blue boxes.</p>
+                <div class="grid-3">
+                    <div class="metric">
+                        <div class="metric-value">12</div>
+                        <div class="metric-label">Red Boxes</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="redClicked">0</div>
+                        <div class="metric-label">Clicked</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="task10Timer">30</div>
+                        <div class="metric-label">Time</div>
+                    </div>
+                </div>
+                <div class="box-grid" id="boxGrid"></div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="submitTask(9)">✅ Done</button>
+                    <button class="btn-secondary" onclick="skipTask()">⏭️ Skip</button>
+                </div>
+            </div>
+
+            <!-- Task 11 -->
+            <div id="task11" class="hidden">
+                <h2>Task 11: Math Problems</h2>
+                <p>🧮 Solve single-digit math problems. 10 problems total.</p>
+                <div class="grid-3">
+                    <div class="metric">
+                        <div class="metric-value" id="mathCount">1/10</div>
+                        <div class="metric-label">Problem</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="mathCorrect">0</div>
+                        <div class="metric-label">Correct</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value" id="task11Timer">80</div>
+                        <div class="metric-label">Time</div>
+                    </div>
+                </div>
+                <div class="math-display" id="mathDisplay">5 + 3 = ?</div>
+                <div class="options-grid" id="mathOptions"></div>
+            </div>
+        </div>
+
+        <!-- RESULTS PAGE -->
+        <div id="resultsPage" class="container hidden">
+            <h1>📊 Results</h1>
+            <div class="alert alert-success">✅ Assessment Complete!</div>
+            
+            <div class="grid-3">
+                <div class="metric">
+                    <div class="metric-value" id="resultUser">U1</div>
+                    <div class="metric-label">User ID</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="resultWpm">45</div>
+                    <div class="metric-label">Calibrated WPM</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="cogLoadBadge">MEDIUM</div>
+                    <div class="metric-label">Cognitive Load</div>
+                </div>
+            </div>
+
+            <h2>Key Metrics</h2>
+            <div class="grid-3">
+                <div class="metric">
+                    <div class="metric-value" id="metricWpm">45</div>
+                    <div class="metric-label">Typing Speed</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="metricError">0.05</div>
+                    <div class="metric-label">Error Rate</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value" id="metricClick">0.5</div>
+                    <div class="metric-label">Click Rate</div>
+                </div>
+            </div>
+
+            <h2>All Features (14 Behavioral Metrics)</h2>
+            <div style="overflow-x: auto;">
+                <table id="featuresTable">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="saveResults()">💾 Save Results</button>
+                <button class="btn-secondary" onclick="navigateTo('data')">📈 View Data</button>
+                <button class="btn-secondary" onclick="newSession()">🔄 New Session</button>
+            </div>
+        </div>
+
+        <!-- DATA PAGE -->
+        <div id="dataPage" class="container hidden">
+            <h1>📈 Collected Data</h1>
+            <div style="overflow-x: auto;">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Session ID</th>
+                            <th>Task ID</th>
+                            <th>Difficulty Level</th>
+                            <th>Typing Speed (WPM)</th>
+                            <th>Error Rate</th>
+                            <th>Backspace Rate</th>
+                            <th>Burst Typing (s)</th>
+                            <th>Sentence Pause (s)</th>
+                            <th>Key Interval Variance</th>
+                            <th>Correction Latency (s)</th>
+                            <th>Typing Rhythm Entropy</th>
+                            <th>Cursor Speed Mean (px/s)</th>
+                            <th>Cursor Speed Variance</th>
+                            <th>Cursor Path Efficiency</th>
+                            <th>Click Rate (click/s)</th>
+                            <th>Hover Time Before Click (s)</th>
+                            <th>Cursor Movement Entropy</th>
+                            <th>Cognitive Load</th>
+                            <th>Final WPM</th>
+                            <th>Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody"></tbody>
+                </table>
+            </div>
+            <button class="btn-primary" onclick="downloadData()">📥 Download CSV</button>
+            <button class="btn-secondary" onclick="clearData()">🗑️ Clear All</button>
+        </div>
+
+        <!-- HELP PAGE -->
+        <div id="helpPage" class="container hidden">
+            <h1>❓ Help & Information</h1>
+            
+            <h2>14 Features Measured</h2>
+            <h3>Typing Features (8):</h3>
+            <ul style="margin: 10px 0 20px 20px; line-height: 1.8;">
+                <li><strong>Typing Speed (WPM)</strong> - Words per minute</li>
+                <li><strong>Error Rate</strong> - Proportion of errors</li>
+                <li><strong>Backspace Rate</strong> - Correction frequency</li>
+                <li><strong>Burst Duration</strong> - Longest pause between keys</li>
+                <li><strong>Sentence Pause</strong> - Average thinking pause</li>
+                <li><strong>Key Variance</strong> - Typing rhythm stability</li>
+                <li><strong>Correction Latency</strong> - Time to fix mistakes</li>
+                <li><strong>Typing Entropy</strong> - Pattern randomness</li>
+            </ul>
+
+            <h3>Mouse Features (6):</h3>
+            <ul style="margin: 10px 0 20px 20px; line-height: 1.8;">
+                <li><strong>Cursor Speed Mean</strong> - Average mouse speed</li>
+                <li><strong>Speed Variance</strong> - Control stability</li>
+                <li><strong>Path Efficiency</strong> - Movement directness</li>
+                <li><strong>Click Rate</strong> - Clicking frequency</li>
+                <li><strong>Hover Time</strong> - Decision hesitation</li>
+                <li><strong>Movement Entropy</strong> - Direction randomness</li>
+            </ul>
+
+            <h2>11 Task Breakdown</h2>
+            <table>
+                <tr>
+                    <th>Task</th>
+                    <th>Type</th>
+                    <th>Focus</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>Typing + Math</td>
+                    <td>Multitasking stress</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>Clean Typing</td>
+                    <td>Baseline performance</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>Theme Changes</td>
+                    <td>Visual distraction</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>Balloons</td>
+                    <td>Speed/reflex</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>High Load</td>
+                    <td>Rapid typing</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>Blinking</td>
+                    <td>Memory + attention</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>Scrolling</td>
+                    <td>Tracking</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>Vanishing</td>
+                    <td>Quick memory</td>
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td>Color Avoid</td>
+                    <td>Error awareness</td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td>Click Boxes</td>
+                    <td>Precision clicking</td>
+                </tr>
+                <tr>
+                    <td>11</td>
+                    <td>Math</td>
+                    <td>Logic + clicking</td>
+                </tr>
+            </table>
+
+            <h2>Cognitive Load Classification</h2>
+            <div style="margin: 15px 0;">
+                <p><span class="cog-load-badge cog-low">🟢 LOW</span> - Comfortable, good performance, under control</p>
+                <p><span class="cog-load-badge cog-medium">🟡 MEDIUM</span> - Moderate effort, some stress</p>
+                <p><span class="cog-load-badge cog-high">🔴 HIGH</span> - High stress, overwhelmed, struggling</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
